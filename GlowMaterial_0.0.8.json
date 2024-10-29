@@ -1,0 +1,679 @@
+{
+  "author": "",
+  "category": "Visual effect",
+  "extensionNamespace": "",
+  "fullName": "Glow material",
+  "helpPath": "https://github.com/GuestGD",
+  "iconUrl": "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz48IURPQ1RZUEUgc3ZnIFBVQkxJQyAiLS8vVzNDLy9EVEQgU1ZHIDEuMS8vRU4iICJodHRwOi8vd3d3LnczLm9yZy9HcmFwaGljcy9TVkcvMS4xL0RURC9zdmcxMS5kdGQiPjxzdmcgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayIgdmVyc2lvbj0iMS4xIiBpZD0ibWRpLWxpZ2h0YnVsYiIgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0IiB2aWV3Qm94PSIwIDAgMjQgMjQiPjxwYXRoIGQ9Ik0xMiwyQTcsNyAwIDAsMCA1LDlDNSwxMS4zOCA2LjE5LDEzLjQ3IDgsMTQuNzRWMTdBMSwxIDAgMCwwIDksMThIMTVBMSwxIDAgMCwwIDE2LDE3VjE0Ljc0QzE3LjgxLDEzLjQ3IDE5LDExLjM4IDE5LDlBNyw3IDAgMCwwIDEyLDJNOSwyMUExLDEgMCAwLDAgMTAsMjJIMTRBMSwxIDAgMCwwIDE1LDIxVjIwSDlWMjFaIiAvPjwvc3ZnPg==",
+  "name": "GlowMaterial",
+  "previewIconUrl": "https://asset-resources.gdevelop.io/public-resources/Icons/0c71e2c62c03aeaeffc5f9a4dd684b2dceac5a53847f591a1bcf4d92174d9b03_lightbulb.svg",
+  "shortDescription": "Glow material",
+  "version": "0.0.1",
+  "description": [
+    "Glow material",
+    ""
+  ],
+  "tags": [
+    "glow bloom light shader material vfx"
+  ],
+  "authorIds": [
+    "W0yoMQqOeiULIwY1i1Qd8tprOyD2"
+  ],
+  "dependencies": [],
+  "eventsFunctions": [
+    {
+      "description": "Add glow material",
+      "fullName": "Add glow material",
+      "functionType": "Action",
+      "name": "AddGlowMaterial",
+      "sentence": "Add glow material for: _PARAM1_ Falloff: _PARAM2_ Radius: _PARAM3_ Color: _PARAM4_ Sharpness: _PARAM5_ Opacity: _PARAM6_ Side: _PARAM7_ DepthTest: _PARAM8_ DepthWrite: _PARAM9_ Time: _PARAM10_",
+      "events": [
+        {
+          "type": "BuiltinCommonInstructions::JsCode",
+          "inlineCode": [
+            "if (objects.length > 0) {",
+            "    const scene = runtimeScene.getLayer(\"\").getRenderer().getThreeScene();",
+            "    const falloff = eventsFunctionContext.getArgument(\"falloff\") || 2;",
+            "    const glowInternalRadius = eventsFunctionContext.getArgument(\"glowInternalRadius\") || 5;",
+            "    const glowColor = gdjs.rgbOrHexToRGBColor(eventsFunctionContext.getArgument(\"glowColor\")) || \"255;0;0\";",
+            "    const glowSharpness = eventsFunctionContext.getArgument(\"glowSharpness\") || 2;",
+            "    const opacity = eventsFunctionContext.getArgument(\"opacity\") || 2;",
+            "    const side = eventsFunctionContext.getArgument(\"side\");",
+            "    const depthTest = eventsFunctionContext.getArgument(\"depthTest\") || true;",
+            "    const depthWrite = eventsFunctionContext.getArgument(\"depthWrite\") || false;",
+            "    const uniformTime = eventsFunctionContext.getArgument(\"uniformTime\") || 0;",
+            "",
+            "    const hexColor = parseInt(\"0x\" + gdjs.rgbToHex(glowColor[0], glowColor[1], glowColor[2]), 16);",
+            "",
+            "    let sidePicked;",
+            "",
+            "    switch (side) {",
+            "        case \"double side\":",
+            "            sidePicked = THREE.DoubleSide;",
+            "            break;",
+            "        case \"front side\":",
+            "            sidePicked = THREE.FrontSide;",
+            "            break;",
+            "        case \"back side\":",
+            "            sidePicked = THREE.BackSide;",
+            "            break;",
+            "        default:",
+            "            sidePicked = THREE.FrontSide;",
+            "            break;",
+            "    } ",
+            "",
+            "    objects.forEach(obj => {",
+            "        const mesh = obj.get3DRendererObject();",
+            "",
+            "        if (mesh) {",
+            "            mesh.traverse(node => {",
+            "                if (node.isMesh && node.material.isMaterial) {",
+            "                    const uniforms = {",
+            "                        opacity: { value: opacity },",
+            "                        glowInternalRadius: { value: glowInternalRadius },",
+            "                        glowSharpness: { value: glowSharpness },",
+            "                        falloff: { value: falloff },",
+            "                        glowColor: { value: new THREE.Color(hexColor) },",
+            "                        time: { value: uniformTime }",
+            "                    };",
+            "",
+            "                    const material = new THREE.ShaderMaterial({",
+            "                        uniforms: uniforms,",
+            "                        vertexShader: `",
+            "                            varying vec3 vPosition;",
+            "                            varying vec3 vNormal;",
+            "                            varying vec2 vUv;",
+            "",
+            "                            void main() {",
+            "                                vUv = uv;",
+            "                                vec4 modelPosition = modelMatrix * instanceMatrix * vec4(position, 1.0);",
+            "                                vec4 modelNormal = modelMatrix * instanceMatrix * vec4(normal, 0.0);",
+            "                                vPosition = modelPosition.xyz;",
+            "                                vNormal = modelNormal.xyz;",
+            "                                gl_Position = projectionMatrix * modelViewMatrix * instanceMatrix * vec4(position, 1.0);",
+            "                            }",
+            "                        `,",
+            "                        fragmentShader: `",
+            "                            uniform vec3 glowColor;",
+            "                            uniform float falloff;",
+            "                            uniform float glowSharpness;",
+            "                            uniform float glowInternalRadius;",
+            "                            uniform float opacity;",
+            "                            uniform float time;",
+            "",
+            "                            varying vec3 vPosition;",
+            "                            varying vec3 vNormal;",
+            "                            varying vec2 vUv;",
+            "",
+            "                            void main() {",
+            "                                vec3 normal = normalize(vNormal);",
+            "                                if(!gl_FrontFacing)",
+            "                                    normal *= - 1.0;",
+            "                                vec3 viewDirection = normalize(cameraPosition - vPosition);",
+            "                                float fresnel = dot(viewDirection, normal);",
+            "                                fresnel = pow(fresnel, glowInternalRadius + 0.1);",
+            "                                float falloffAmount = smoothstep(0., falloff, fresnel);",
+            "                                float fakeGlow = fresnel;",
+            "                                fakeGlow += fresnel * glowSharpness;",
+            "                                fakeGlow *= falloffAmount;",
+            "",
+            "                                // Radial gradient effect",
+            "                                vec2 center = vec2(0.5, 0.5);",
+            "                                float dist = distance(vUv, center);",
+            "                                float gradient = smoothstep(0.0, 1.0, dist + sin(time * 2.0) * 0.1);",
+            "                                fakeGlow *= gradient;",
+            "",
+            "                                vec3 finalColor = clamp(glowColor * fresnel, 0., 1.0);",
+            "                                float finalOpacity = clamp(fakeGlow, 0., opacity);",
+            "",
+            "                                gl_FragColor = vec4(finalColor, finalOpacity);",
+            "",
+            "                                #include <tonemapping_fragment>",
+            "                                #include <colorspace_fragment>",
+            "                            }",
+            "                        `,",
+            "                        depthTest: depthTest,",
+            "                        blending: THREE.AdditiveBlending,",
+            "                        transparent: true,",
+            "                        side: sidePicked,",
+            "                        depthWrite: depthWrite ",
+            "                    });",
+            "",
+            "                    node.material = material;",
+            "                    node.material.needsUpdate = true;",
+            "                }",
+            "            })",
+            "        }",
+            "    })",
+            "};"
+          ],
+          "parameterObjects": "id",
+          "useStrict": true,
+          "eventsSheetExpanded": true
+        }
+      ],
+      "parameters": [
+        {
+          "description": "Name",
+          "name": "id",
+          "type": "objectList"
+        },
+        {
+          "description": "Falloff",
+          "name": "falloff",
+          "type": "expression"
+        },
+        {
+          "description": "Glow internal radius",
+          "name": "glowInternalRadius",
+          "type": "expression"
+        },
+        {
+          "description": "Glow color",
+          "name": "glowColor",
+          "type": "color"
+        },
+        {
+          "description": "Glow sharpness",
+          "name": "glowSharpness",
+          "type": "expression"
+        },
+        {
+          "description": "Opacity",
+          "name": "opacity",
+          "type": "expression"
+        },
+        {
+          "description": "Side",
+          "name": "side",
+          "supplementaryInformation": "[\"double side\",\"front side\",\"back side\"]",
+          "type": "stringWithSelector"
+        },
+        {
+          "defaultValue": "True",
+          "description": "Depth test",
+          "name": "depthTest",
+          "optional": true,
+          "type": "trueorfalse"
+        },
+        {
+          "description": "Depth write",
+          "name": "depthWrite",
+          "type": "trueorfalse"
+        },
+        {
+          "description": "uniformTime",
+          "name": "uniformTime",
+          "type": "expression"
+        }
+      ],
+      "objectGroups": []
+    },
+    {
+      "description": "Set falloff",
+      "fullName": "Set falloff",
+      "functionType": "Action",
+      "name": "SetFalloff",
+      "sentence": "Set falloff for: _PARAM1_ Operator: _PARAM2_ Value: _PARAM3_",
+      "events": [
+        {
+          "type": "BuiltinCommonInstructions::JsCode",
+          "inlineCode": [
+            "if (objects.length > 0) {",
+            "    const scene = runtimeScene.getLayer(\"\").getRenderer().getThreeScene();",
+            "    const value = eventsFunctionContext.getArgument(\"value\") || 2;    ",
+            "    const operator = eventsFunctionContext.getArgument(\"operator\"); ",
+            "",
+            "    objects.forEach(obj => {",
+            "        const mesh = obj.get3DRendererObject();",
+            "",
+            "        if (mesh) {",
+            "            mesh.traverse(node => {",
+            "                if (node.isMesh && node.material.isMaterial) {",
+            "                    switch (operator) {",
+            "                        case \"=\":",
+            "                            node.material.uniforms.falloff.value = value;",
+            "                            break;",
+            "                        case \"+\":",
+            "                            node.material.uniforms.falloff.value += value;",
+            "                            break;",
+            "                        case \"-\":",
+            "                            node.material.uniforms.falloff.value -= value;",
+            "                            break;",
+            "                    }                   ",
+            "                    node.material.needsUpdate = true;",
+            "                }",
+            "            })",
+            "        }",
+            "    })",
+            "};"
+          ],
+          "parameterObjects": "id",
+          "useStrict": true,
+          "eventsSheetExpanded": true
+        }
+      ],
+      "parameters": [
+        {
+          "description": "Name",
+          "name": "id",
+          "type": "objectList"
+        },
+        {
+          "description": "Operator",
+          "name": "operator",
+          "supplementaryInformation": "[\"=\",\"+\",\"-\"]",
+          "type": "stringWithSelector"
+        },
+        {
+          "description": "Value",
+          "name": "value",
+          "type": "expression"
+        }
+      ],
+      "objectGroups": []
+    },
+    {
+      "description": "Set glow internal radius",
+      "fullName": "Set glow internal radius",
+      "functionType": "Action",
+      "name": "SetGlowInternalRadius",
+      "sentence": "Set glow internal radius for: _PARAM1_ Operator: _PARAM2_ Value: _PARAM3_",
+      "events": [
+        {
+          "type": "BuiltinCommonInstructions::JsCode",
+          "inlineCode": [
+            "if (objects.length > 0) {",
+            "    const scene = runtimeScene.getLayer(\"\").getRenderer().getThreeScene();",
+            "    const value = eventsFunctionContext.getArgument(\"value\") || 2;    ",
+            "    const operator = eventsFunctionContext.getArgument(\"operator\"); ",
+            "",
+            "    objects.forEach(obj => {",
+            "        const mesh = obj.get3DRendererObject();",
+            "",
+            "        if (mesh) {",
+            "            mesh.traverse(node => {",
+            "                if (node.isMesh && node.material.isMaterial) {",
+            "                    switch (operator) {",
+            "                        case \"=\":",
+            "                            node.material.uniforms.glowInternalRadius.value = value;",
+            "                            break;",
+            "                        case \"+\":",
+            "                            node.material.uniforms.glowInternalRadius.value += value;",
+            "                            break;",
+            "                        case \"-\":",
+            "                            node.material.uniforms.glowInternalRadius.value -= value;",
+            "                            break;",
+            "                    }                   ",
+            "                    node.material.needsUpdate = true;",
+            "                }",
+            "            })",
+            "        }",
+            "    })",
+            "};"
+          ],
+          "parameterObjects": "id",
+          "useStrict": true,
+          "eventsSheetExpanded": true
+        }
+      ],
+      "parameters": [
+        {
+          "description": "Name",
+          "name": "id",
+          "type": "objectList"
+        },
+        {
+          "description": "Operator",
+          "name": "operator",
+          "supplementaryInformation": "[\"=\",\"+\",\"-\"]",
+          "type": "stringWithSelector"
+        },
+        {
+          "description": "Value",
+          "name": "value",
+          "type": "expression"
+        }
+      ],
+      "objectGroups": []
+    },
+    {
+      "description": "Set glow sharpness",
+      "fullName": "Set glow sharpness",
+      "functionType": "Action",
+      "name": "SetGlowSharpness",
+      "sentence": "Set glow sharpness for: _PARAM1_ Operator: _PARAM2_ Value: _PARAM3_",
+      "events": [
+        {
+          "type": "BuiltinCommonInstructions::JsCode",
+          "inlineCode": [
+            "if (objects.length > 0) {",
+            "    const scene = runtimeScene.getLayer(\"\").getRenderer().getThreeScene();",
+            "    const value = eventsFunctionContext.getArgument(\"value\") || 2;    ",
+            "    const operator = eventsFunctionContext.getArgument(\"operator\"); ",
+            "",
+            "    objects.forEach(obj => {",
+            "        const mesh = obj.get3DRendererObject();",
+            "",
+            "        if (mesh) {",
+            "            mesh.traverse(node => {",
+            "                if (node.isMesh && node.material.isMaterial) {",
+            "                    switch (operator) {",
+            "                        case \"=\":",
+            "                            node.material.uniforms.glowSharpness.value = value;",
+            "                            break;",
+            "                        case \"+\":",
+            "                            node.material.uniforms.glowSharpness.value += value;",
+            "                            break;",
+            "                        case \"-\":",
+            "                            node.material.uniforms.glowSharpness.value -= value;",
+            "                            break;",
+            "                    }                   ",
+            "                    node.material.needsUpdate = true;",
+            "                }",
+            "            })",
+            "        }",
+            "    })",
+            "};"
+          ],
+          "parameterObjects": "id",
+          "useStrict": true,
+          "eventsSheetExpanded": true
+        }
+      ],
+      "parameters": [
+        {
+          "description": "Name",
+          "name": "id",
+          "type": "objectList"
+        },
+        {
+          "description": "Operator",
+          "name": "operator",
+          "supplementaryInformation": "[\"=\",\"+\",\"-\"]",
+          "type": "stringWithSelector"
+        },
+        {
+          "description": "Value",
+          "name": "value",
+          "type": "expression"
+        }
+      ],
+      "objectGroups": []
+    },
+    {
+      "description": "Set opacity",
+      "fullName": "Set opacity",
+      "functionType": "Action",
+      "name": "SetOpacity",
+      "sentence": "Set opacity for: _PARAM1_ Operator: _PARAM2_ Value: _PARAM3_",
+      "events": [
+        {
+          "type": "BuiltinCommonInstructions::JsCode",
+          "inlineCode": [
+            "if (objects.length > 0) {",
+            "    const scene = runtimeScene.getLayer(\"\").getRenderer().getThreeScene();",
+            "    const value = eventsFunctionContext.getArgument(\"value\") || 2;    ",
+            "    const operator = eventsFunctionContext.getArgument(\"operator\"); ",
+            "",
+            "    objects.forEach(obj => {",
+            "        const mesh = obj.get3DRendererObject();",
+            "",
+            "        if (mesh) {",
+            "            mesh.traverse(node => {",
+            "                if (node.isMesh && node.material.isMaterial) {",
+            "                    switch (operator) {",
+            "                        case \"=\":",
+            "                            node.material.uniforms.opacity.value = value;",
+            "                            break;",
+            "                        case \"+\":",
+            "                            node.material.uniforms.opacity.value += value;",
+            "                            break;",
+            "                        case \"-\":",
+            "                            node.material.uniforms.opacity.value -= value;",
+            "                            break;",
+            "                    }                   ",
+            "                    node.material.needsUpdate = true;",
+            "                }",
+            "            })",
+            "        }",
+            "    })",
+            "};"
+          ],
+          "parameterObjects": "id",
+          "useStrict": true,
+          "eventsSheetExpanded": true
+        }
+      ],
+      "parameters": [
+        {
+          "description": "Name",
+          "name": "id",
+          "type": "objectList"
+        },
+        {
+          "description": "Operator",
+          "name": "operator",
+          "supplementaryInformation": "[\"=\",\"+\",\"-\"]",
+          "type": "stringWithSelector"
+        },
+        {
+          "description": "Value",
+          "name": "value",
+          "type": "expression"
+        }
+      ],
+      "objectGroups": []
+    },
+    {
+      "description": "Set distortion scale",
+      "fullName": "Set distortion scale",
+      "functionType": "Action",
+      "name": "SetDistortionScale",
+      "sentence": "Set distortion scale for: _PARAM1_ Operator: _PARAM2_ Value: _PARAM3_",
+      "events": [
+        {
+          "type": "BuiltinCommonInstructions::JsCode",
+          "inlineCode": [
+            "if (objects.length > 0) {",
+            "    const scene = runtimeScene.getLayer(\"\").getRenderer().getThreeScene();",
+            "    const value = eventsFunctionContext.getArgument(\"value\") || 2;    ",
+            "    const operator = eventsFunctionContext.getArgument(\"operator\"); ",
+            "",
+            "    objects.forEach(obj => {",
+            "        const mesh = obj.get3DRendererObject();",
+            "",
+            "        if (mesh) {",
+            "            mesh.traverse(node => {",
+            "                if (node.isMesh && node.material.isMaterial) {",
+            "                    switch (operator) {",
+            "                        case \"=\":",
+            "                            node.material.uniforms.distortionScale.value = value;",
+            "                            break;",
+            "                        case \"+\":",
+            "                            node.material.uniforms.distortionScale.value += value;",
+            "                            break;",
+            "                        case \"-\":",
+            "                            node.material.uniforms.distortionScale.value -= value;",
+            "                            break;",
+            "                    }                   ",
+            "                    node.material.needsUpdate = true;",
+            "                }",
+            "            })",
+            "        }",
+            "    })",
+            "};"
+          ],
+          "parameterObjects": "id",
+          "useStrict": true,
+          "eventsSheetExpanded": true
+        }
+      ],
+      "parameters": [
+        {
+          "description": "Name",
+          "name": "id",
+          "type": "objectList"
+        },
+        {
+          "description": "Operator",
+          "name": "operator",
+          "supplementaryInformation": "[\"=\",\"+\",\"-\"]",
+          "type": "stringWithSelector"
+        },
+        {
+          "description": "Value",
+          "name": "value",
+          "type": "expression"
+        }
+      ],
+      "objectGroups": []
+    },
+    {
+      "description": "Set uniform time",
+      "fullName": "Set uniform time",
+      "functionType": "Action",
+      "name": "SetUniformTime",
+      "sentence": "Set uniform time for: _PARAM1_ Operator: _PARAM2_ Value: _PARAM3_",
+      "events": [
+        {
+          "type": "BuiltinCommonInstructions::JsCode",
+          "inlineCode": [
+            "if (objects.length > 0) {",
+            "    const scene = runtimeScene.getLayer(\"\").getRenderer().getThreeScene();",
+            "    const value = eventsFunctionContext.getArgument(\"value\") || 0;    ",
+            "    const operator = eventsFunctionContext.getArgument(\"operator\"); ",
+            "",
+            "    objects.forEach(obj => {",
+            "        const mesh = obj.get3DRendererObject();",
+            "",
+            "        if (mesh) {",
+            "            mesh.traverse(node => {",
+            "                if (node.isMesh && node.material.isMaterial) {",
+            "                    switch (operator) {",
+            "                        case \"=\":",
+            "                            node.material.uniforms.time.value = value;",
+            "                            break;",
+            "                        case \"+\":",
+            "                            node.material.uniforms.time.value += value;",
+            "                            break;",
+            "                        case \"-\":",
+            "                            node.material.uniforms.time.value -= value;",
+            "                            break;",
+            "                    }                   ",
+            "                    node.material.needsUpdate = true;",
+            "                }",
+            "            })",
+            "        }",
+            "    })",
+            "};"
+          ],
+          "parameterObjects": "id",
+          "useStrict": true,
+          "eventsSheetExpanded": true
+        }
+      ],
+      "parameters": [
+        {
+          "description": "Name",
+          "name": "id",
+          "type": "objectList"
+        },
+        {
+          "description": "Operator",
+          "name": "operator",
+          "supplementaryInformation": "[\"=\",\"+\",\"-\"]",
+          "type": "stringWithSelector"
+        },
+        {
+          "description": "Value",
+          "name": "value",
+          "type": "expression"
+        }
+      ],
+      "objectGroups": []
+    },
+    {
+      "description": "Set color",
+      "fullName": "Set color",
+      "functionType": "Action",
+      "name": "SetColor",
+      "sentence": "Set color for: _PARAM1_ Time: _PARAM2_ Color: _PARAM3_",
+      "events": [
+        {
+          "type": "BuiltinCommonInstructions::JsCode",
+          "inlineCode": [
+            "if (objects.length > 0) {",
+            "    const scene = runtimeScene.getLayer(\"\").getRenderer().getThreeScene();",
+            "    const value = gdjs.rgbOrHexToRGBColor(eventsFunctionContext.getArgument(\"value\")) || \"255;0;0\";   ",
+            "    const time = eventsFunctionContext.getArgument(\"time\"); ",
+            "",
+            "    const hexColor = parseInt(\"0x\" + gdjs.rgbToHex(value[0], value[1], value[2]), 16);",
+            "    const endColor = new THREE.Color(hexColor);",
+            "    const endColorRGB = [endColor.r, endColor.g, endColor.b];",
+            "",
+            "    objects.forEach(obj => {",
+            "        const mesh = obj.get3DRendererObject();",
+            "",
+            "        if (mesh) {",
+            "            mesh.traverse(node => {",
+            "                if (node.isMesh && node.material.isMaterial) {",
+            "                    const currentColor = node.material.uniforms.glowColor.value;",
+            "                    const startColor = new THREE.Color(currentColor);",
+            "",
+            "                    let interpolationFactor = 0;",
+            "                    const duration = time; ",
+            "                    let startTime = Date.now();",
+            "",
+            "                    function animate() {",
+            "                        const currentTime = Date.now();",
+            "                        const elapsedTime = currentTime - startTime;",
+            "",
+            "                        if (elapsedTime < duration) {",
+            "                            interpolationFactor = elapsedTime / duration;",
+            "                            const currentColor = startColor.clone().lerp(endColor, interpolationFactor);",
+            "                            node.material.uniforms.glowColor.value = [currentColor.r, currentColor.g, currentColor.b];",
+            "                            requestAnimationFrame(animate);",
+            "                        } else {",
+            "                            interpolationFactor = 1;",
+            "                            const currentColor = startColor.clone().lerp(endColor, interpolationFactor);",
+            "                            node.material.uniforms.glowColor.value = [currentColor.r, currentColor.g, currentColor.b];",
+            "                        }",
+            "                    }",
+            "",
+            "                    animate();",
+            "                }",
+            "            });",
+            "        }",
+            "    });",
+            "}"
+          ],
+          "parameterObjects": "id",
+          "useStrict": true,
+          "eventsSheetExpanded": true
+        }
+      ],
+      "parameters": [
+        {
+          "description": "Name",
+          "name": "id",
+          "type": "objectList"
+        },
+        {
+          "description": "Time in ms",
+          "name": "time",
+          "supplementaryInformation": "[\"=\",\"+\",\"-\"]",
+          "type": "expression"
+        },
+        {
+          "description": "Color",
+          "name": "value",
+          "type": "color"
+        }
+      ],
+      "objectGroups": []
+    }
+  ],
+  "eventsBasedBehaviors": [],
+  "eventsBasedObjects": []
+}
